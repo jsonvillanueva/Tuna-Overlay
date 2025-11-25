@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Now Playing</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="now-playing">
+      <img id="albumArt" src="album_art.png" alt="Album Art" />
+      <div class="song-info">
+        <div class="blur-bg" id="blurBg"></div>
+        <div id="title" class="song-title"></div>
+        <div id="artist" class="song-artist"></div>
+        <div id="timeDisplay">
+          <span id="timeCurrent"></span>
+          <span id="timeRemaining"></span>
+        </div>
+        <div class="progress-bar">
+          <div id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+    <script src="song-info.js"></script>
+  </body>
+</html>
