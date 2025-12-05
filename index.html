@@ -10,14 +10,32 @@
       <img id="albumArt" src="album_art.png" alt="Album Art" />
       <div class="song-info">
         <div class="blur-bg" id="blurBg"></div>
-        <div id="title" class="song-title"></div>
-        <div id="artist" class="song-artist"></div>
-        <div id="timeDisplay">
-          <span id="timeCurrent"></span>
-          <span id="timeRemaining"></span>
-        </div>
-        <div class="progress-bar">
-          <div id="progressFill"></div>
+        <div class="separate-text">
+          <div class="text-top">
+            <div class="song-text-wrapper">
+              <div class="fade-left"></div>
+              <div class="fade-right"></div>
+              <div class="marquee" id="marquee">
+                <span id="title" class="song-text"></span>
+                <span class="spacer-text"></span>
+                <span
+                  id="title-duplicate"
+                  class="song-text"
+                  style="display: none"
+                ></span>
+              </div>
+            </div>
+            <div id="artist" class="song-artist"></div>
+          </div>
+          <div class="text-bottom">
+            <div id="timeDisplay">
+              <span id="timeCurrent"></span>
+              <span id="timeRemaining"></span>
+            </div>
+            <div class="progress-bar">
+              <div id="progressFill"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

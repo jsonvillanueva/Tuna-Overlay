@@ -1,12 +1,29 @@
 const container = document.querySelector(".now-playing");
-let noUpdateCounter = 0;
-const MAX_NO_UPDATE = 5;
+const titleEl = document.getElementById("title");
+const artistEl = document.getElementById("artist");
+const albumArtEl = document.getElementById("albumArt");
+const blurBgEl = document.getElementById("blurBg");
+const wrapper = document.querySelector(".song-text-wrapper");
+const marquee = document.querySelector(".marquee");
+const currentTimeEl = document.getElementById("timeCurrent");
+const remainingTimeEl = document.getElementById("timeRemaining");
+const progressFillEl = document.getElementById("progressFill");
+const fadeLeftEl = document.querySelector(".fade-left");
+const fadeRightEl = document.querySelector(".fade-right");
 
-// Last Known Values
-let lastTitle = "";
-let lastArtist = "";
-let lastAlbumArt = "album_art.png";
-let prevProgress = "";
+let marqueePos = 0;
+let marqueeInitialized = false;
+let marqueeClone = null;
+
+const state = {
+  noUpdateCounter: 0,
+  MAX_NO_UPDATE: 5,
+
+  lastTitle: "",
+  lastArtist: "",
+  lastAlbumArt: "album_art.png",
+  prevProgress: "",
+};
 
 function parseTime(str) {
   const [min, sec] = str.split(":").map(Number);
@@ -33,23 +50,61 @@ async function fetchText(file) {
 function updateField(el, newValue, lastValueKey) {
   if (newValue && newValue.trim() !== "") {
     el.textContent = newValue;
-    window[lastValueKey] = newValue; // store last good value
+    return newValue;
   } else {
-    el.textContent = window[lastValueKey] || "";
+    return lastValueKey || "";
   }
 }
 
 function updateAlbumArtSmooth(newSrc) {
+  if (state.lastAlbumArt === newSrc) return; // prevent unnecessary reload
+
   const img = new Image();
   img.src = newSrc;
 
   img.onload = () => {
-    document.getElementById("albumArt").src = newSrc;
-    document.getElementById(
-      "blurBg"
-    ).style.backgroundImage = `url('${newSrc}')`;
-    lastAlbumArt = newSrc; // update global
+    albumArtEl.src = newSrc;
+    blurBgEl.style.backgroundImage = `url('${newSrc}')`;
+    state.lastAlbumArt = newSrc;
   };
+}
+
+function updateScrollingBehavior() {
+  const wrapperWidth = wrapper.clientWidth;
+  const textWidth = titleEl.scrollWidth;
+
+  const dupEl = document.getElementById("title-duplicate");
+  let padding = 100;
+  dupEl.style.paddingLeft = `${padding}px`; // bigger gap
+  dupEl.textContent = titleEl.textContent; // duplicate the text
+
+  const totalScrollWidth = textWidth + padding; // 50px gap
+
+  if (textWidth <= wrapperWidth) {
+    // No scrolling
+    marquee.class.remove("scrolling");
+    marquee.classList.remove("scrolling");
+    marquee.style.animationDuration = "";
+    marquee.style.setProperty("--scroll-distance", "0px");
+
+    // Remove fade effects when text fits
+    wrapper.classList.remove("masked");
+    fadeLeftEl.classList.remove("visible");
+    return;
+  }
+
+  // Enable scrolling
+  marquee.classList.add("scrolling");
+
+  // Scroll distance is negative of total width of one copy
+  marquee.style.setProperty("--scroll-distance", `-${totalScrollWidth}px`);
+
+  // Duration based on speed (pixels per second)
+  const speed = 100; // adjust as needed
+  const duration = totalScrollWidth / speed;
+  marquee.style.animationDuration = `${duration}s`;
+  wrapper.classList.add("masked");
+  dupEl.style.display = "inline-block";
 }
 
 async function updateInfo() {
@@ -60,39 +115,32 @@ async function updateInfo() {
   ]);
 
   // Check for updates
-  if (progressRaw === prevProgress) {
-    noUpdateCounter++;
+  if (progressRaw === state.prevProgress) {
+    state.noUpdateCounter++;
   } else {
-    noUpdateCounter = 0;
-    prevProgress = progressRaw;
+    state.noUpdateCounter = 0;
+    state.prevProgress = progressRaw;
   }
 
   // Hide overlay if no update for MAX_NO_UPDATE intervals
-  if (noUpdateCounter >= MAX_NO_UPDATE) {
+  if (state.noUpdateCounter >= state.MAX_NO_UPDATE) {
     container.classList.add("hidden");
     return;
   } else {
     container.classList.remove("hidden");
   }
 
-  // Show overlay
-  // Update title/artist
+  const hasSongChanged =
+    title && (title !== state.lastTitle || artist !== state.lastArtist);
 
-  // Title & Artist (ignore clears)
-  updateField(document.getElementById("title"), title, "lastTitle");
-  updateField(document.getElementById("artist"), artist, "lastArtist");
+  state.lastTitle = updateField(titleEl, title, state.lastTitle);
+  state.lastArtist = updateField(artistEl, artist, state.lastArtist);
 
-  const songChanged =
-    title !== "" && (title !== lastTitle || artist !== lastArtist);
-  if (songChanged) {
-    const cacheSrc = "album_art.png?t=" + Date.now();
-    updateAlbumArtSmooth(cacheSrc);
+  if (hasSongChanged) {
+    updateAlbumArtSmooth("album_art.png?t=" + Date.now());
+    updateScrollingBehavior(); // reset scrolling on new title
   }
 
-  // Refresh the album art if it was missing
-  if (!document.getElementById("albumArt").src.includes(lastAlbumArt)) {
-    updateAlbumArtSmooth(lastAlbumArt);
-  }
   // Update progress bar
   const parts = progressRaw.split(" ");
   console.log(parts);
@@ -101,13 +149,13 @@ async function updateInfo() {
     const current = parseTime(currentStr);
     const duration = parseTime(durationStr);
 
-    document.getElementById("timeCurrent").textContent = `${currentStr}`;
+    currentTimeEl.textContent = `${currentStr}`;
     const remaining = duration - current;
     const remainingStr = formatTime(remaining);
-    document.getElementById("timeRemaining").textContent = `${remainingStr}`;
+    remainingTimeEl.textContent = `${remainingStr}`;
     if (duration > 0) {
       const percent = (current / duration) * 100;
-      document.getElementById("progressFill").style.width = percent + "%";
+      progressFillEl.style.width = percent + "%";
     }
   }
 }
