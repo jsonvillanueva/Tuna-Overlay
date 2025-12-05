@@ -15,6 +15,14 @@ let marqueePos = 0;
 let marqueeInitialized = false;
 let marqueeClone = null;
 
+document.addEventListener("DOMContentLoaded", () => {
+  const dupEl = document.getElementById("title-duplicate");
+  if (dupEl) dupEl.style.display = "none";
+  wrapper.classList.remove("masked");
+  if (fadeLeftEl) fadeLeftEl.classList.remove("visible");
+  if (fadeRightEl) fadeRightEl.classList.remove("visible");
+});
+
 const state = {
   noUpdateCounter: 0,
   MAX_NO_UPDATE: 5,
@@ -59,11 +67,11 @@ function updateField(el, newValue, lastValueKey) {
 function updateAlbumArtSmooth(newSrc) {
   if (state.lastAlbumArt === newSrc) return; // prevent unnecessary reload
 
+  albumArtEl.src = newSrc;
   const img = new Image();
   img.src = newSrc;
 
   img.onload = () => {
-    albumArtEl.src = newSrc;
     blurBgEl.style.backgroundImage = `url('${newSrc}')`;
     state.lastAlbumArt = newSrc;
   };
@@ -75,21 +83,20 @@ function updateScrollingBehavior() {
 
   const dupEl = document.getElementById("title-duplicate");
   let padding = 100;
-  dupEl.style.paddingLeft = `${padding}px`; // bigger gap
-  dupEl.textContent = titleEl.textContent; // duplicate the text
+  dupEl.style.paddingLeft = `${padding}px`;
+  dupEl.textContent = titleEl.textContent;
 
-  const totalScrollWidth = textWidth + padding; // 50px gap
+  const totalScrollWidth = textWidth + padding;
 
   if (textWidth <= wrapperWidth) {
     // No scrolling
-    marquee.class.remove("scrolling");
     marquee.classList.remove("scrolling");
     marquee.style.animationDuration = "";
     marquee.style.setProperty("--scroll-distance", "0px");
 
     // Remove fade effects when text fits
+    dupEl.style.display = "none";
     wrapper.classList.remove("masked");
-    fadeLeftEl.classList.remove("visible");
     return;
   }
 
@@ -138,9 +145,9 @@ async function updateInfo() {
 
   if (hasSongChanged) {
     updateAlbumArtSmooth("album_art.png?t=" + Date.now());
-    updateScrollingBehavior(); // reset scrolling on new title
   }
 
+  updateScrollingBehavior();
   // Update progress bar
   const parts = progressRaw.split(" ");
   console.log(parts);
