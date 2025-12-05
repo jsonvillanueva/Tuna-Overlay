@@ -8,8 +8,6 @@ const marquee = document.querySelector(".marquee");
 const currentTimeEl = document.getElementById("timeCurrent");
 const remainingTimeEl = document.getElementById("timeRemaining");
 const progressFillEl = document.getElementById("progressFill");
-const fadeLeftEl = document.querySelector(".fade-left");
-const fadeRightEl = document.querySelector(".fade-right");
 
 let marqueePos = 0;
 let marqueeInitialized = false;
@@ -65,13 +63,11 @@ function updateField(el, newValue, lastValueKey) {
 }
 
 function updateAlbumArtSmooth(newSrc) {
-  if (state.lastAlbumArt === newSrc) return; // prevent unnecessary reload
-
-  albumArtEl.src = newSrc;
   const img = new Image();
   img.src = newSrc;
 
   img.onload = () => {
+    albumArtEl.src = newSrc;
     blurBgEl.style.backgroundImage = `url('${newSrc}')`;
     state.lastAlbumArt = newSrc;
   };

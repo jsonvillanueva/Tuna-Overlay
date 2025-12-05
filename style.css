@@ -46,6 +46,7 @@ body {
   padding: 50px;
   border-radius: 0px 60px 60px 0px;
   overflow: hidden;
+  background-color: black;
 }
 
 /* Blurred album art background */
@@ -171,33 +172,6 @@ body {
   display: inline-block;
   padding-right: 50px; /* space between repeats */
   padding-bottom: 10px;
-}
-
-.fade-left,
-.fade-right {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 10;
-}
-
-.fade-left.visible,
-.fade-right.visible {
-  opacity: 1;
-}
-
-.fade-left {
-  left: 0;
-  background: linear-gradient(to right, white, transparent);
-}
-
-.fade-right {
-  right: 0;
-  background: linear-gradient(to left, white, transparent);
 }
 
 /* Infinite scroll */
