@@ -64,12 +64,45 @@ function updateField(el, newValue, lastValueKey) {
 
 function updateAlbumArtSmooth(newSrc) {
   const img = new Image();
-  img.src = newSrc;
+  const cacheBusted = newSrc + "?t=" + Date.now();
+  img.src = cacheBusted;
 
+  let attempts = 0;
+  const maxAttempts = 10;
+  const retryDelay = 300; //ms
+
+  function tryLoad() {
+    const testImg = new Image();
+    const retrySrc = newSrc + "?t=" + Date.now();
+
+    testImg.onload = () => {
+      // SUCCESS — image finally exists, update UI
+      albumArtEl.src = retrySrc;
+      blurBgEl.style.backgroundImage = `url('${retrySrc}')`;
+      state.lastAlbumArt = retrySrc;
+    };
+
+    testImg.onerror = () => {
+      // FAILED — retry until max retries hit
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(tryLoad, retryDelay);
+      }
+    };
+
+    testImg.src = retrySrc;
+  }
+
+  // initial attempt
   img.onload = () => {
-    albumArtEl.src = newSrc;
-    blurBgEl.style.backgroundImage = `url('${newSrc}')`;
-    state.lastAlbumArt = newSrc;
+    albumArtEl.src = cacheBusted;
+    blurBgEl.style.backgroundImage = `url('${cacheBusted}')`;
+    state.lastAlbumArt = cacheBusted;
+  };
+
+  img.onerror = () => {
+    // Start retry loop
+    tryLoad();
   };
 }
 
